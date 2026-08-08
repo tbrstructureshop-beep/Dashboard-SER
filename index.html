@@ -122,7 +122,7 @@
           </div>
           <div class="ml-3">
             <p class="text-sm font-medium text-green-800" id="successMsg"></p>
-            <a id="fileLink" href="#" target="_blank" class="text-sm text-green-700 underline font-bold mt-1 block">Open Document</a>
+            <a id="fileLink" href="#" target="_blank" class="text-sm text-green-700 underline font-bold mt-1 block">Open Dashboard</a>
           </div>
         </div>
       </div>
@@ -131,7 +131,12 @@
   </div>
 
   <script>
-    function handleFormSubmit(formObject) {
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbynwcgBoK_Chupn32ogddrwKSpv0ZN3eeaHU-bBI582Ue1FJDk3ay97AfW1tALB2a9fMg/exec";
+
+    async function handleFormSubmit(formObject) {
+      // Mencegah refresh halaman
+      event.preventDefault();
+      
       document.getElementById('loader').style.display = 'flex';
       document.getElementById('result').classList.add('hidden');
       
@@ -151,27 +156,30 @@
         subject: formObject.subject.value
       };
 
-      google.script.run
-        .withSuccessHandler(showSuccess)
-        .withFailureHandler(showError)
-        .submitForm(data);
-    }
+      try {
+        // Menggunakan Fetch API untuk integrasi Vercel ke Google Apps Script
+        await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify(data),
+          mode: 'no-cors'
+        });
 
-    function showSuccess(response) {
-      document.getElementById('loader').style.display = 'none';
-      if(response.status === 'success') {
-        document.getElementById('result').classList.remove('hidden');
-        document.getElementById('successMsg').innerText = 'Success! Created ' + response.serNo;
-        document.getElementById('fileLink').href = response.url;
-        document.getElementById('serForm').reset();
-      } else {
-        alert('Error: ' + response.message);
+        // Karena mode 'no-cors', browser tidak bisa membaca isi respon JSON, 
+        // namun request tetap sampai dan diproses di sisi Google.
+        // Kita beri waktu tunggu sejenak sebelum menampilkan status sukses.
+        setTimeout(() => {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('result').classList.remove('hidden');
+          document.getElementById('successMsg').innerText = 'SER Request Submitted! The document is being generated and logged.';
+          document.getElementById('fileLink').innerText = "Click here to open Dashboard Spreadsheet";
+          document.getElementById('fileLink').href = "https://docs.google.com/spreadsheets/d/1Zv4KzQAnsG9sn7RVR76F7ZSUKoGm0eX-UFUby5Dc6Es/edit";
+          formObject.reset();
+        }, 2500);
+
+      } catch (err) {
+        document.getElementById('loader').style.display = 'none';
+        alert('Critical Error: ' + err.message);
       }
-    }
-
-    function showError(err) {
-      document.getElementById('loader').style.display = 'none';
-      alert('Critical Error: ' + err);
     }
   </script>
 </body>
