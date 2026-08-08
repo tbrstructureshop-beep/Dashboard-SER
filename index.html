@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Dashboard SER</title>
+  <style>
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999; justify-content: center; align-items: center;
+      color: white; flex-direction: column;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <div id="loader" class="loading-overlay">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 mb-4"></div>
+    <p class="text-xl font-semibold">Processing SER Document...</p>
+  </div>
+
+  <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+      <div class="bg-blue-600 px-6 py-4">
+        <h1 class="text-2xl font-bold text-white">Dashboard SER</h1>
+        <p class="text-blue-100 text-sm">Create and Generate Service Evaluation Report</p>
+      </div>
+
+      <form id="serForm" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6" onsubmit="handleFormSubmit(this)">
+        
+        <!-- Section Header -->
+        <div class="md:col-span-2 border-b pb-2 mb-2">
+          <h2 class="text-lg font-semibold text-gray-700">General Information</h2>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">DISTRIBUTION</label>
+          <input type="text" name="distribution" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700">DATE</label>
+          <input type="date" name="date" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+        </div>
+
+        <!-- Section Subject -->
+        <div class="md:col-span-2 border-b pb-2 mt-4 mb-2">
+          <h2 class="text-lg font-semibold text-gray-700">Reference & Subject</h2>
+        </div>
+        
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700">SUBJECT</label>
+          <input type="text" name="subject" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+        </div>
+        
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700">REFERENCE</label>
+          <input type="text" name="reference" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+        </div>
+
+        <!-- Section Technical -->
+        <div class="md:col-span-2 border-b pb-2 mt-4 mb-2">
+          <h2 class="text-lg font-semibold text-gray-700">Part Details</h2>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">PART NAME</label>
+          <input type="text" name="partName" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">PART NUMBER</label>
+          <input type="text" name="partNumber" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">SERIAL NUMBER</label>
+          <input type="text" name="serialNumber" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">MANUFACTURER</label>
+          <input type="text" name="manufacturer" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700">AIRCRAFT TYPE</label>
+          <input type="text" name="aircraftType" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+        </div>
+
+        <!-- Section Signature -->
+        <div class="md:col-span-2 border-b pb-2 mt-4 mb-2">
+          <h2 class="text-lg font-semibold text-gray-700">Personnel</h2>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded shadow-sm">
+          <label class="block text-xs font-bold text-gray-500 uppercase">Prepared By</label>
+          <input type="text" name="preparedByName" placeholder="Name" required class="mt-2 block w-full border-gray-300 rounded p-2 text-sm">
+          <input type="text" name="preparedBySign" placeholder="Initial/Sign Tag" required class="mt-2 block w-full border-gray-300 rounded p-2 text-sm italic">
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded shadow-sm">
+          <label class="block text-xs font-bold text-gray-500 uppercase">Approved By</label>
+          <input type="text" name="approvedByName" placeholder="Name" required class="mt-2 block w-full border-gray-300 rounded p-2 text-sm">
+          <input type="text" name="approvedBySign" placeholder="Initial/Sign Tag" required class="mt-2 block w-full border-gray-300 rounded p-2 text-sm italic">
+        </div>
+
+        <div class="md:col-span-2 mt-6">
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+            GENERATE SER DOCUMENT
+          </button>
+        </div>
+      </form>
+      
+      <div id="result" class="hidden p-6 border-t bg-green-50">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 text-green-500">
+            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm font-medium text-green-800" id="successMsg"></p>
+            <a id="fileLink" href="#" target="_blank" class="text-sm text-green-700 underline font-bold mt-1 block">Open Document</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function handleFormSubmit(formObject) {
+      document.getElementById('loader').style.display = 'flex';
+      document.getElementById('result').classList.add('hidden');
+      
+      const data = {
+        distribution: formObject.distribution.value,
+        date: formObject.date.value,
+        preparedBySign: formObject.preparedBySign.value,
+        approvedBySign: formObject.approvedBySign.value,
+        preparedByName: formObject.preparedByName.value,
+        approvedByName: formObject.approvedByName.value,
+        partName: formObject.partName.value,
+        partNumber: formObject.partNumber.value,
+        serialNumber: formObject.serialNumber.value,
+        manufacturer: formObject.manufacturer.value,
+        aircraftType: formObject.aircraftType.value,
+        reference: formObject.reference.value,
+        subject: formObject.subject.value
+      };
+
+      google.script.run
+        .withSuccessHandler(showSuccess)
+        .withFailureHandler(showError)
+        .submitForm(data);
+    }
+
+    function showSuccess(response) {
+      document.getElementById('loader').style.display = 'none';
+      if(response.status === 'success') {
+        document.getElementById('result').classList.remove('hidden');
+        document.getElementById('successMsg').innerText = 'Success! Created ' + response.serNo;
+        document.getElementById('fileLink').href = response.url;
+        document.getElementById('serForm').reset();
+      } else {
+        alert('Error: ' + response.message);
+      }
+    }
+
+    function showError(err) {
+      document.getElementById('loader').style.display = 'none';
+      alert('Critical Error: ' + err);
+    }
+  </script>
+</body>
+</html>
