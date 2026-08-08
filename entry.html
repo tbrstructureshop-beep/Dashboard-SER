@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SER Entry — TCP-8</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#0A1930;
+    --navy-800:#16304F;
+    --steel-600:#3D6E99;
+    --paper:#F4F6F8;
+    --card:#FFFFFF;
+    --ink:#1B2733;
+    --muted:#64748B;
+    --amber-500:#E8A33D;
+    --green-600:#1F8A4C;
+    --red-600:#C0392B;
+    --line:#D8DEE6;
+  }
+  html,body{background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;}
+  .font-mono-tech{font-family:'IBM Plex Mono',monospace;}
+  .field-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem;
+    font-weight:600;
+    letter-spacing:.08em;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+  .field-input{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:.6rem .75rem;
+    font-size:.92rem;
+    color:var(--ink);
+    width:100%;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .field-input:focus{
+    outline:none;
+    border-color:var(--steel-600);
+    box-shadow:0 0 0 3px rgba(61,110,153,.15);
+  }
+  .doc-panel{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 1px 2px rgba(10,25,48,.04);
+  }
+  .section-rule{
+    border-bottom:1px solid var(--line);
+  }
+  .section-eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.7rem;
+    letter-spacing:.12em;
+    color:var(--steel-600);
+    text-transform:uppercase;
+  }
+  .stamp{
+    border:2px dashed var(--navy-800);
+    border-radius:8px;
+    background:repeating-linear-gradient(135deg, rgba(22,48,79,.03) 0 10px, transparent 10px 20px);
+    transform:rotate(-1.2deg);
+  }
+  .stamp.stamped{
+    animation:stampIn .5s cubic-bezier(.2,.9,.3,1.2) both;
+    border-style:solid;
+    border-color:var(--green-600);
+    background:rgba(31,138,76,.05);
+  }
+  @keyframes stampIn{
+    0%{transform:rotate(-1.2deg) scale(1.4);opacity:0;}
+    60%{transform:rotate(-2deg) scale(.96);opacity:1;}
+    100%{transform:rotate(-1.2deg) scale(1);opacity:1;}
+  }
+  .stagger > *{
+    opacity:0;
+    animation:riseIn .45s ease forwards;
+  }
+  .stagger > *:nth-child(1){animation-delay:.02s;}
+  .stagger > *:nth-child(2){animation-delay:.07s;}
+  .stagger > *:nth-child(3){animation-delay:.12s;}
+  .stagger > *:nth-child(4){animation-delay:.17s;}
+  .stagger > *:nth-child(5){animation-delay:.22s;}
+  .stagger > *:nth-child(6){animation-delay:.27s;}
+  @keyframes riseIn{
+    from{opacity:0; transform:translateY(6px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .stagger > *, .stamp.stamped{animation:none !important; opacity:1 !important; transform:none !important;}
+  }
+  .loading-overlay{
+    display:none;position:fixed;inset:0;background:rgba(10,25,48,.55);
+    z-index:999;justify-content:center;align-items:center;flex-direction:column;color:#fff;
+  }
+  .btn-primary{
+    background:var(--navy-950);color:#fff;font-weight:600;
+    border-radius:6px;padding:.85rem 1rem;transition:background .15s ease;
+  }
+  .btn-primary:hover{background:var(--navy-800);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+</style>
+</head>
+<body class="min-h-screen">
+
+  <div id="loader" class="loading-overlay">
+    <div class="animate-spin rounded-full h-14 w-14 border-t-4 border-b-4" style="border-top-color:#E8A33D;border-bottom-color:transparent;"></div>
+    <p class="mt-4 font-mono-tech text-sm tracking-wide">GENERATING SER DOCUMENT…</p>
+  </div>
+
+  <div class="container mx-auto px-4 py-10 max-w-4xl">
+
+    <div class="flex items-start justify-between mb-6 flex-wrap gap-4">
+      <div>
+        <p class="section-eyebrow">TCP-8 · Service Evaluation Report</p>
+        <h1 class="text-3xl font-bold mt-1" style="color:var(--navy-950)">New SER Entry</h1>
+        <p class="text-sm mt-1" style="color:var(--muted)">Fill in the fields below. A serialized document is generated and logged automatically.</p>
+      </div>
+      <div id="stampBox" class="stamp px-5 py-3 text-center min-w-[220px]">
+        <p class="field-label !text-[var(--navy-800)]">SER Number</p>
+        <p id="stampText" class="font-mono-tech text-lg font-bold mt-1" style="color:var(--navy-950)">assigned on submit</p>
+      </div>
+    </div>
+
+    <div class="doc-panel">
+      <form id="serForm" class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+
+        <div class="md:col-span-2 stagger">
+          <p class="section-eyebrow mb-1">01 · General Information</p>
+          <div class="section-rule pb-3 mb-1"></div>
+        </div>
+
+        <div>
+          <label class="field-label">Distribution</label>
+          <input type="text" name="distribution" required class="field-input mt-1.5">
+        </div>
+        <div>
+          <label class="field-label">Date</label>
+          <input type="date" name="date" required class="field-input mt-1.5">
+        </div>
+
+        <div class="md:col-span-2 mt-2">
+          <p class="section-eyebrow mb-1">02 · Reference &amp; Subject</p>
+          <div class="section-rule pb-3 mb-1"></div>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="field-label">Subject</label>
+          <input type="text" name="subject" required class="field-input mt-1.5">
+        </div>
+        <div class="md:col-span-2">
+          <label class="field-label">Reference</label>
+          <input type="text" name="reference" required class="field-input mt-1.5">
+        </div>
+
+        <div class="md:col-span-2 mt-2">
+          <p class="section-eyebrow mb-1">03 · Part Details</p>
+          <div class="section-rule pb-3 mb-1"></div>
+        </div>
+
+        <div>
+          <label class="field-label">Part Name</label>
+          <input type="text" name="partName" required class="field-input mt-1.5">
+        </div>
+        <div>
+          <label class="field-label">Part Number</label>
+          <input type="text" name="partNumber" required class="field-input mt-1.5 font-mono-tech">
+        </div>
+        <div>
+          <label class="field-label">Serial Number</label>
+          <input type="text" name="serialNumber" required class="field-input mt-1.5 font-mono-tech">
+        </div>
+        <div>
+          <label class="field-label">Manufacturer</label>
+          <input type="text" name="manufacturer" required class="field-input mt-1.5">
+        </div>
+        <div class="md:col-span-2">
+          <label class="field-label">Aircraft Type</label>
+          <input type="text" name="aircraftType" required class="field-input mt-1.5">
+        </div>
+
+        <div class="md:col-span-2 mt-2">
+          <p class="section-eyebrow mb-1">04 · Personnel</p>
+          <div class="section-rule pb-3 mb-1"></div>
+        </div>
+
+        <div class="rounded-lg p-4" style="background:var(--paper);border:1px solid var(--line)">
+          <p class="field-label mb-2">Prepared By</p>
+          <input type="text" name="preparedByName" placeholder="Name" required class="field-input mb-2">
+          <input type="text" name="preparedBySign" placeholder="Initial / Sign Tag" required class="field-input font-mono-tech italic">
+        </div>
+        <div class="rounded-lg p-4" style="background:var(--paper);border:1px solid var(--line)">
+          <p class="field-label mb-2">Approved By</p>
+          <input type="text" name="approvedByName" placeholder="Name" required class="field-input mb-2">
+          <input type="text" name="approvedBySign" placeholder="Initial / Sign Tag" required class="field-input font-mono-tech italic">
+        </div>
+
+        <div class="md:col-span-2 mt-4">
+          <button type="submit" id="submitBtn" class="btn-primary w-full">Generate SER Document</button>
+        </div>
+      </form>
+
+      <div id="result" class="hidden mx-6 mb-6 md:mx-8 md:mb-8 p-4 rounded-lg" style="background:rgba(31,138,76,.06);border:1px solid rgba(31,138,76,.3)">
+        <p class="text-sm font-semibold" style="color:var(--green-600)" id="successMsg"></p>
+        <a id="fileLink" href="#" target="_blank" class="text-sm underline font-semibold mt-1 inline-block" style="color:var(--navy-800)">Open generated document</a>
+        <a href="dashboard.html" class="text-sm underline font-semibold mt-1 ml-4 inline-block" style="color:var(--navy-800)">Go to dashboard →</a>
+      </div>
+
+      <div id="errorBox" class="hidden mx-6 mb-6 md:mx-8 md:mb-8 p-4 rounded-lg" style="background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.3)">
+        <p class="text-sm font-semibold" style="color:var(--red-600)">Submission failed</p>
+        <p class="text-sm mt-1" id="errorMsg" style="color:var(--ink)"></p>
+      </div>
+    </div>
+
+    <p class="text-xs text-center mt-6" style="color:var(--muted)">Records are logged to the SER Dashboard spreadsheet · <a href="dashboard.html" class="underline">View dashboard</a></p>
+  </div>
+
+  <script>
+    // Set this to your deployed Apps Script Web App URL (must end in /exec)
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbynwcgBoK_Chupn32ogddrwKSpv0ZN3eeaHU-bBI582Ue1FJDk3ay97AfW1tALB2a9fMg/exec";
+
+    const form = document.getElementById('serForm');
+    const loader = document.getElementById('loader');
+    const resultBox = document.getElementById('result');
+    const errorBox = document.getElementById('errorBox');
+    const submitBtn = document.getElementById('submitBtn');
+    const stampBox = document.getElementById('stampBox');
+    const stampText = document.getElementById('stampText');
+
+    form.addEventListener('submit', handleFormSubmit);
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+
+      resultBox.classList.add('hidden');
+      errorBox.classList.add('hidden');
+      stampBox.classList.remove('stamped');
+      submitBtn.disabled = true;
+      loader.style.display = 'flex';
+
+      const fd = new FormData(form);
+      const data = Object.fromEntries(fd.entries());
+
+      try {
+        // IMPORTANT: no 'mode: no-cors' here — we need to read the real response
+        // so failures are surfaced instead of silently showing a fake success.
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify(data) // text/plain by default -> avoids CORS preflight
+        });
+
+        if (!res.ok) {
+          throw new Error(`Server responded with HTTP ${res.status}`);
+        }
+
+        const result = await res.json();
+
+        if (result.status === 'success') {
+          stampText.textContent = result.serNo;
+          stampBox.classList.add('stamped');
+
+          document.getElementById('successMsg').textContent =
+            `SER ${result.serNo} generated and logged successfully.`;
+          document.getElementById('fileLink').href = result.url;
+          resultBox.classList.remove('hidden');
+          form.reset();
+        } else {
+          throw new Error(result.message || 'Unknown error from server.');
+        }
+      } catch (err) {
+        document.getElementById('errorMsg').textContent = err.message;
+        errorBox.classList.remove('hidden');
+      } finally {
+        loader.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
