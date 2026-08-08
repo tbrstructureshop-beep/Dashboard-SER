@@ -1,185 +1,243 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base target="_top">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>Dashboard SER</title>
-  <style>
-    .loading-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 999; justify-content: center; align-items: center;
-      color: white; flex-direction: column;
-    }
-  </style>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SER Dashboard — TCP-8</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#0A1930;
+    --navy-800:#16304F;
+    --steel-600:#3D6E99;
+    --paper:#F4F6F8;
+    --card:#FFFFFF;
+    --ink:#1B2733;
+    --muted:#64748B;
+    --amber-500:#E8A33D;
+    --green-600:#1F8A4C;
+    --red-600:#C0392B;
+    --line:#D8DEE6;
+  }
+  html,body{background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;}
+  .font-mono-tech{font-family:'IBM Plex Mono',monospace;}
+  .chevron-strip{
+    background-image: repeating-linear-gradient(-45deg, var(--amber-500) 0 14px, var(--navy-950) 14px 28px);
+    height:5px;
+  }
+  .field-input{
+    background:var(--card);border:1px solid var(--line);border-radius:6px;
+    padding:.55rem .8rem;font-size:.88rem;color:var(--ink);
+  }
+  .field-input:focus{outline:none;border-color:var(--steel-600);box-shadow:0 0 0 3px rgba(61,110,153,.15);}
+  table{border-collapse:separate;border-spacing:0;}
+  thead th{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;
+    color:#C7D2E0;background:var(--navy-950);
+    padding:.65rem .85rem;text-align:left;white-space:nowrap;
+    position:sticky;top:0;
+  }
+  tbody td{
+    padding:.65rem .85rem;font-size:.85rem;border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody tr:nth-child(even){background:rgba(22,48,79,.025);}
+  tbody tr:hover{background:rgba(61,110,153,.07);}
+  .ser-pill{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:.78rem;
+    color:var(--navy-800);
+  }
+  .status-pill{
+    display:inline-flex;align-items:center;gap:.35rem;
+    font-family:'IBM Plex Mono',monospace;font-size:.66rem;font-weight:600;
+    letter-spacing:.05em;text-transform:uppercase;
+    color:var(--green-600);background:rgba(31,138,76,.08);
+    border:1px solid rgba(31,138,76,.25);border-radius:999px;padding:.15rem .55rem;
+  }
+  .status-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green-600);}
+  .skeleton{
+    background:linear-gradient(90deg, #E9EDF1 25%, #F3F5F7 37%, #E9EDF1 63%);
+    background-size:400% 100%;animation:shine 1.4s ease infinite;border-radius:4px;
+  }
+  @keyframes shine{0%{background-position:100% 0;}100%{background-position:0 0;}}
+  @media (prefers-reduced-motion: reduce){.skeleton{animation:none;}}
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="min-h-screen">
 
-  <div id="loader" class="loading-overlay">
-    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 mb-4"></div>
-    <p class="text-xl font-semibold">Processing SER Document...</p>
-  </div>
-
-  <div class="container mx-auto px-4 py-8 max-w-4xl">
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-      <div class="bg-blue-600 px-6 py-4">
-        <h1 class="text-2xl font-bold text-white">Dashboard SER</h1>
-        <p class="text-blue-100 text-sm">Create and Generate Service Evaluation Report</p>
+  <div class="chevron-strip"></div>
+  <div class="bg-[var(--navy-950)] text-white">
+    <div class="container mx-auto px-4 py-6 max-w-7xl flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <p class="font-mono-tech text-xs tracking-widest uppercase" style="color:var(--amber-500)">TCP-8 · SER Log</p>
+        <h1 class="text-2xl font-bold mt-1">Service Evaluation Report Dashboard</h1>
       </div>
-
-      <form id="serForm" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6" onsubmit="handleFormSubmit(this)">
-        
-        <!-- Section Header -->
-        <div class="md:col-span-2 border-b pb-2 mb-2">
-          <h2 class="text-lg font-semibold text-gray-700">General Information</h2>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">DISTRIBUTION</label>
-          <input type="text" name="distribution" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700">DATE</label>
-          <input type="date" name="date" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-        </div>
-
-        <!-- Section Subject -->
-        <div class="md:col-span-2 border-b pb-2 mt-4 mb-2">
-          <h2 class="text-lg font-semibold text-gray-700">Reference & Subject</h2>
-        </div>
-        
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-gray-700">SUBJECT</label>
-          <input type="text" name="subject" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-        </div>
-        
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-gray-700">REFERENCE</label>
-          <input type="text" name="reference" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-        </div>
-
-        <!-- Section Technical -->
-        <div class="md:col-span-2 border-b pb-2 mt-4 mb-2">
-          <h2 class="text-lg font-semibold text-gray-700">Part Details</h2>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">PART NAME</label>
-          <input type="text" name="partName" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">PART NUMBER</label>
-          <input type="text" name="partNumber" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">SERIAL NUMBER</label>
-          <input type="text" name="serialNumber" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">MANUFACTURER</label>
-          <input type="text" name="manufacturer" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-        </div>
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-gray-700">AIRCRAFT TYPE</label>
-          <input type="text" name="aircraftType" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-        </div>
-
-        <!-- Section Signature -->
-        <div class="md:col-span-2 border-b pb-2 mt-4 mb-2">
-          <h2 class="text-lg font-semibold text-gray-700">Personnel</h2>
-        </div>
-
-        <div class="bg-gray-50 p-4 rounded shadow-sm">
-          <label class="block text-xs font-bold text-gray-500 uppercase">Prepared By</label>
-          <input type="text" name="preparedByName" placeholder="Name" required class="mt-2 block w-full border-gray-300 rounded p-2 text-sm">
-          <input type="text" name="preparedBySign" placeholder="Initial/Sign Tag" required class="mt-2 block w-full border-gray-300 rounded p-2 text-sm italic">
-        </div>
-
-        <div class="bg-gray-50 p-4 rounded shadow-sm">
-          <label class="block text-xs font-bold text-gray-500 uppercase">Approved By</label>
-          <input type="text" name="approvedByName" placeholder="Name" required class="mt-2 block w-full border-gray-300 rounded p-2 text-sm">
-          <input type="text" name="approvedBySign" placeholder="Initial/Sign Tag" required class="mt-2 block w-full border-gray-300 rounded p-2 text-sm italic">
-        </div>
-
-        <div class="md:col-span-2 mt-6">
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
-            GENERATE SER DOCUMENT
-          </button>
-        </div>
-      </form>
-      
-      <div id="result" class="hidden p-6 border-t bg-green-50">
-        <div class="flex items-center">
-          <div class="flex-shrink-0 text-green-500">
-            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-            </svg>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm font-medium text-green-800" id="successMsg"></p>
-            <a id="fileLink" href="#" target="_blank" class="text-sm text-green-700 underline font-bold mt-1 block">Open Dashboard</a>
-          </div>
-        </div>
-      </div>
-
+      <a href="entry.html" class="bg-white text-[var(--navy-950)] font-semibold text-sm px-4 py-2 rounded-md hover:bg-gray-100 transition">
+        + New SER Entry
+      </a>
     </div>
   </div>
 
-  <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbynwcgBoK_Chupn32ogddrwKSpv0ZN3eeaHU-bBI582Ue1FJDk3ay97AfW1tALB2a9fMg/exec";
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
 
-    async function handleFormSubmit(formObject) {
-      // Mencegah refresh halaman
-      event.preventDefault();
-      
-      document.getElementById('loader').style.display = 'flex';
-      document.getElementById('result').classList.add('hidden');
-      
-      const data = {
-        distribution: formObject.distribution.value,
-        date: formObject.date.value,
-        preparedBySign: formObject.preparedBySign.value,
-        approvedBySign: formObject.approvedBySign.value,
-        preparedByName: formObject.preparedByName.value,
-        approvedByName: formObject.approvedByName.value,
-        partName: formObject.partName.value,
-        partNumber: formObject.partNumber.value,
-        serialNumber: formObject.serialNumber.value,
-        manufacturer: formObject.manufacturer.value,
-        aircraftType: formObject.aircraftType.value,
-        reference: formObject.reference.value,
-        subject: formObject.subject.value
-      };
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white rounded-lg border p-4" style="border-color:var(--line)">
+        <p class="field-label text-xs font-mono-tech uppercase tracking-wide" style="color:var(--muted)">Total Records</p>
+        <p id="statTotal" class="text-2xl font-bold mt-1" style="color:var(--navy-950)">—</p>
+      </div>
+      <div class="bg-white rounded-lg border p-4" style="border-color:var(--line)">
+        <p class="text-xs font-mono-tech uppercase tracking-wide" style="color:var(--muted)">Latest SER No.</p>
+        <p id="statLatest" class="text-2xl font-bold mt-1 font-mono-tech" style="color:var(--navy-950)">—</p>
+      </div>
+      <div class="bg-white rounded-lg border p-4" style="border-color:var(--line)">
+        <p class="text-xs font-mono-tech uppercase tracking-wide" style="color:var(--muted)">Distinct Aircraft Types</p>
+        <p id="statAircraft" class="text-2xl font-bold mt-1" style="color:var(--navy-950)">—</p>
+      </div>
+      <div class="bg-white rounded-lg border p-4" style="border-color:var(--line)">
+        <p class="text-xs font-mono-tech uppercase tracking-wide" style="color:var(--muted)">Last Entry Date</p>
+        <p id="statDate" class="text-2xl font-bold mt-1" style="color:var(--navy-950)">—</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg border p-4 mb-4 flex flex-wrap gap-3 items-center" style="border-color:var(--line)">
+      <input id="searchInput" type="text" placeholder="Search SER No., part number, serial, aircraft type…" class="field-input flex-1 min-w-[240px]">
+      <button id="refreshBtn" class="text-sm font-semibold px-3 py-2 rounded-md border" style="border-color:var(--line);color:var(--navy-800)">
+        ↻ Refresh
+      </button>
+      <a id="sheetLink" href="#" target="_blank" class="text-sm font-semibold underline" style="color:var(--steel-600)">Open raw spreadsheet</a>
+    </div>
+
+    <div class="bg-white rounded-lg border overflow-hidden" style="border-color:var(--line)">
+      <div class="overflow-x-auto max-h-[65vh] overflow-y-auto">
+        <table class="w-full">
+          <thead>
+            <tr>
+              <th>SER No.</th>
+              <th>Date</th>
+              <th>Distribution</th>
+              <th>Subject</th>
+              <th>Part Name</th>
+              <th>Part Number</th>
+              <th>Serial No.</th>
+              <th>Manufacturer</th>
+              <th>Aircraft Type</th>
+              <th>Prepared By</th>
+              <th>Approved By</th>
+              <th>Status</th>
+              <th>Document</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="13" class="py-6"><div class="skeleton h-4 w-full"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p id="emptyState" class="hidden text-center py-10" style="color:var(--muted)">
+      No SER records yet. <a href="entry.html" class="underline font-semibold" style="color:var(--steel-600)">Create the first one →</a>
+    </p>
+    <p id="errorState" class="hidden text-center py-10 text-sm" style="color:var(--red-600)"></p>
+  </div>
+
+  <script>
+    // Same Apps Script Web App URL as entry.html
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbynwcgBoK_Chupn32ogddrwKSpv0ZN3eeaHU-bBI582Ue1FJDk3ay97AfW1tALB2a9fMg/exec";
+    const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1Zv4KzQAnsG9sn7RVR76F7ZSUKoGm0eX-UFUby5Dc6Es/edit";
+
+    document.getElementById('sheetLink').href = SPREADSHEET_URL;
+
+    let allRecords = [];
+
+    const tableBody = document.getElementById('tableBody');
+    const emptyState = document.getElementById('emptyState');
+    const errorState = document.getElementById('errorState');
+    const searchInput = document.getElementById('searchInput');
+
+    document.getElementById('refreshBtn').addEventListener('click', loadRecords);
+    searchInput.addEventListener('input', () => renderTable(filterRecords(searchInput.value)));
+
+    loadRecords();
+
+    async function loadRecords() {
+      tableBody.innerHTML = `<tr><td colspan="13" class="py-6"><div class="skeleton h-4 w-full"></div></td></tr>`;
+      emptyState.classList.add('hidden');
+      errorState.classList.add('hidden');
 
       try {
-        // Menggunakan Fetch API untuk integrasi Vercel ke Google Apps Script
-        await fetch(GAS_URL, {
-          method: 'POST',
-          body: JSON.stringify(data),
-          mode: 'no-cors'
-        });
+        const res = await fetch(`${GAS_URL}?action=list`);
+        if (!res.ok) throw new Error(`Server responded with HTTP ${res.status}`);
+        const result = await res.json();
 
-        // Karena mode 'no-cors', browser tidak bisa membaca isi respon JSON, 
-        // namun request tetap sampai dan diproses di sisi Google.
-        // Kita beri waktu tunggu sejenak sebelum menampilkan status sukses.
-        setTimeout(() => {
-          document.getElementById('loader').style.display = 'none';
-          document.getElementById('result').classList.remove('hidden');
-          document.getElementById('successMsg').innerText = 'SER Request Submitted! The document is being generated and logged.';
-          document.getElementById('fileLink').innerText = "Click here to open Dashboard Spreadsheet";
-          document.getElementById('fileLink').href = "https://docs.google.com/spreadsheets/d/1Zv4KzQAnsG9sn7RVR76F7ZSUKoGm0eX-UFUby5Dc6Es/edit";
-          formObject.reset();
-        }, 2500);
+        if (result.status !== 'success') {
+          throw new Error(result.message || 'Unknown error loading records.');
+        }
 
+        allRecords = result.records || [];
+        updateStats(allRecords);
+        renderTable(allRecords);
       } catch (err) {
-        document.getElementById('loader').style.display = 'none';
-        alert('Critical Error: ' + err.message);
+        tableBody.innerHTML = '';
+        errorState.textContent = `Could not load records: ${err.message}`;
+        errorState.classList.remove('hidden');
       }
+    }
+
+    function filterRecords(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) return allRecords;
+      return allRecords.filter(r =>
+        [r.serNo, r.partNumber, r.serialNumber, r.aircraftType, r.subject]
+          .join(' ').toLowerCase().includes(q)
+      );
+    }
+
+    function renderTable(records) {
+      if (!records.length) {
+        tableBody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      tableBody.innerHTML = records.map(r => `
+        <tr>
+          <td class="ser-pill">${escapeHtml(r.serNo)}</td>
+          <td>${escapeHtml(r.date)}</td>
+          <td>${escapeHtml(r.distribution)}</td>
+          <td class="max-w-[220px] truncate" title="${escapeHtml(r.subject)}">${escapeHtml(r.subject)}</td>
+          <td>${escapeHtml(r.partName)}</td>
+          <td class="font-mono-tech">${escapeHtml(r.partNumber)}</td>
+          <td class="font-mono-tech">${escapeHtml(r.serialNumber)}</td>
+          <td>${escapeHtml(r.manufacturer)}</td>
+          <td>${escapeHtml(r.aircraftType)}</td>
+          <td>${escapeHtml(r.preparedByName)}</td>
+          <td>${escapeHtml(r.approvedByName)}</td>
+          <td><span class="status-pill">Logged</span></td>
+          <td>${r.fileUrl ? `<a href="${r.fileUrl}" target="_blank" class="underline font-semibold" style="color:var(--steel-600)">Open</a>` : '—'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function updateStats(records) {
+      document.getElementById('statTotal').textContent = records.length;
+      document.getElementById('statLatest').textContent = records.length ? records[records.length - 1].serNo : '—';
+      document.getElementById('statAircraft').textContent = new Set(records.map(r => r.aircraftType).filter(Boolean)).size;
+      document.getElementById('statDate').textContent = records.length ? records[records.length - 1].date : '—';
+    }
+
+    function escapeHtml(str) {
+      if (str === undefined || str === null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
     }
   </script>
 </body>
